@@ -1,0 +1,8 @@
+---
+services:
+  healthcheck:
+    container_name: healthcheck.py
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: devcontainer.env
