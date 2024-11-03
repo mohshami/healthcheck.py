@@ -48,6 +48,16 @@ async def ping(name: str,
     return {"expires": expires, "now": int(time())}
 
 
+@app.delete("/ping/{name}")
+async def removeCheck(name: str):
+    query = f'DELETE FROM healthcheck where name="{name}";'
+
+    await app.state.db.execute(query)
+    await app.state.db.commit()
+
+    return {"status": "ok"}
+
+
 @app.get("/status")
 async def status():
     cursor = await app.state.db.execute(
