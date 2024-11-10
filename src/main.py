@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException
+from typing import Optional
 import aiosqlite
 from time import time
 
@@ -59,9 +60,22 @@ async def removeCheck(name: str):
 
 
 @app.get("/status")
-async def status():
-    cursor = await app.state.db.execute(
-        "select name from healthcheck where expires < unixepoch('now');")
+@app.get("/status/")
+@app.get("/status/{name}")
+async def status(
+        name: Optional[str] = '%'):
+
+    countQuery = f"select count(id) from healthcheck where name like '{name}'"
+    cursor = await app.state.db.execute(countQuery)
+    retVal = await cursor.fetchone()
+    if retVal[0] < 1:
+        return HTTPException(
+            status_code=503, detail=f"Check {name} does not exist")
+
+    statusQuery = f"select name from healthcheck where name like '{
+        name}' and expires < unixepoch('now');"
+
+    cursor = await app.state.db.execute(statusQuery)
     retVal = await cursor.fetchall()
     b = [sub[0] for sub in retVal]
 
