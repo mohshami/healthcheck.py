@@ -11,7 +11,7 @@ app = FastAPI()
 async def startup():
     # Initialize the SQLite connection
     app.state.db = \
-        await aiosqlite.connect("./db.sqlite")
+        await aiosqlite.connect("/data/db.sqlite")
 
     query = "CREATE TABLE IF NOT EXISTS healthcheck(" + \
         "id INTEGER PRIMARY KEY AUTOINCREMENT, " + \
