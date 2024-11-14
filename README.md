@@ -18,14 +18,14 @@ A sample docker-compose.yml file running Traefik as a reverse proxy with basic a
 ## Usage
 ```
 # Status check, returns 503 when at least one check expires, 200 otherwise
-$ curl http://localhost:8000/status
+$ curl http://localhost:3000/status
 # Success
 {"status":"healthy"}
 # Check(s) expired
 {"status_code":503,"detail":"test1 expired","headers":null}
 
 # Status check, returns 503 if the check in question expired or does not exist
-$ curl http://localhost:8000/status/test1
+$ curl http://localhost:3000/status/test1
 # Success
 {"status":"healthy"}
 # Check expired
@@ -35,8 +35,8 @@ $ curl http://localhost:8000/status/test1
 
 # "Ping" service
 # "ttl" is the time in seconds before the check expires, defaults to 3600
-curl -H "ttl: 300" http://localhost:8000/ping/test1
+curl -H "ttl: 300" http://localhost:3000/ping/test1
 
 # Remove a check
-curl -X DELETE http://localhost:8000/ping/test1
+curl -X DELETE http://localhost:3000/ping/test1
 ```
