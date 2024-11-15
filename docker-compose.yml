@@ -1,0 +1,50 @@
+services:
+  reverse-proxy:
+    # The official v3.2 Traefik docker image
+    image: traefik:v3.2
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker
+      - --log.level=DEBUG
+      - --entryPoints.http.address=:80
+      - --entrypoints.http.http.redirections.entrypoint.to=https
+      - --entrypoints.http.http.redirections.entrypoint.scheme=https
+      - --entryPoints.https.address=:443
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http
+      - --certificatesresolvers.letsencrypt.acme.email=${EMAIL_ADDRESS}
+      - --certificatesresolvers.letsencrypt.acme.storage=/certificates/acme.json
+    ports:
+      # The HTTP port
+      - "80:80"
+      - "443:443"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "traefik_certificates:/certificates"
+
+  healthcheck:
+    build:
+      context: .
+    container_name: "healthcheck"
+    restart: unless-stopped
+    volumes:
+      - "healthcheck_data:/data"
+    ports:
+      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.healthcheck.loadbalancer.server.port=3000"
+      - "traefik.http.routers.healthcheck.rule=Host(`${HEALTHCHECK_URL}`)"
+      - "traefik.http.routers.healthcheck.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.healthcheck.entrypoints=https"
+      - "traefik.http.routers.healthcheck.middlewares=test-auth"
+      # If user/password information was entered here directly, all dollar signs in the hash need to be doubled for escaping
+      # Use the following command to generate the hash (Password below is 123)
+      # echo $(openssl passwd -apr1) | sed -e s/\\$/\\$\\$/g
+      - "traefik.http.middlewares.test-auth.basicauth.users=${HEALTHCHECK_USER}:${HEALTHCHECK_PASSWORD}"
+
+volumes:
+  traefik_certificates:
+  healthcheck_data:

@@ -1,2 +1,3 @@
+.env.sample
 db.sqlite
 src/__pycache__

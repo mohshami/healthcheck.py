@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./src /code/app
 
+VOLUME /data
+
 ENTRYPOINT ["fastapi", "run", "app/main.py", "--port", "3000"]
