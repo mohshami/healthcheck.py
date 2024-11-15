@@ -10,33 +10,45 @@ A sample docker-compose.yml file running Traefik as a reverse proxy with basic a
 * Check Removal: Remove checks that are no longer needed
 
 ## Getting Started
-* Clone the repo
-* cp .env.sample .env
-* set variables in .env
-* run docker compose up -d
+```bash
+git clone https://github.com/mohshami/healthcheck.py.git
+cp .env.sample .env
+# set variables in .env
+docker compose up -d
+```
 
 ## Usage
-```
-# Status check, returns 503 when at least one check expires, 200 otherwise
-$ curl http://localhost:3000/status
-# Success
-{"status":"healthy"}
-# Check(s) expired
-{"status_code":503,"detail":"test1 expired","headers":null}
-
-# Status check, returns 503 if the check in question expired or does not exist
-$ curl http://localhost:3000/status/test1
-# Success
-{"status":"healthy"}
-# Check expired
-{"status_code":503,"detail":"test1 expired","headers":null}
-# Check does not exist
-{"status_code":503,"detail":"Check test2 does not exist","headers":null}
-
-# "Ping" service
+### "Ping" service
+```bash
 # "ttl" is the time in seconds before the check expires, defaults to 3600
 curl -H "ttl: 300" http://localhost:3000/ping/test1
+```
 
-# Remove a check
+### Status check
+```bash
+# All Checks
+$ curl http://localhost:3000/status
+
+# Returns 200 when none of the checks expired
+{"status":"healthy"}
+
+# Returns 503 when at least one check expired
+{"status_code":503,"detail":"test1 expired","headers":null}
+
+# Single check, returns 503 if the check in question expired or does not exist
+$ curl http://localhost:3000/status/test1
+
+# Success
+{"status":"healthy"}
+
+# Check expired
+{"status_code":503,"detail":"test1 expired","headers":null}
+
+# Check does not exist
+{"status_code":503,"detail":"Check test2 does not exist","headers":null}
+```
+
+### Remove a check
+```bash
 curl -X DELETE http://localhost:3000/ping/test1
 ```
