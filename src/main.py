@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header
+from fastapi.responses import JSONResponse
 from typing import Optional
 import aiosqlite
 from time import time
@@ -62,25 +63,17 @@ async def removeCheck(name: str):
 @app.get("/status")
 @app.get("/status/")
 @app.get("/status/{name}")
-async def status(
-        name: Optional[str] = '%'):
+async def status(name: Optional[str] = '%'):
+    now = int(time())
+    return_code = 200
+    statustQuery = f"select name, expires from healthcheck " \
+        f"where name like '{name}'"
+    cursor = await app.state.db.execute(statustQuery)
+    records = await cursor.fetchall()
+    checks = {}
+    for (key, val) in records:
+        checks[key] = val - now
+        if val < now:
+            return_code = 503
 
-    countQuery = f"select count(id) from healthcheck where name like '{name}'"
-    cursor = await app.state.db.execute(countQuery)
-    retVal = await cursor.fetchone()
-    if retVal[0] < 1:
-        return HTTPException(
-            status_code=503, detail=f"Check {name} does not exist")
-
-    statusQuery = f"select name from healthcheck where name like '{
-        name}' and expires < unixepoch('now');"
-
-    cursor = await app.state.db.execute(statusQuery)
-    retVal = await cursor.fetchall()
-    b = [sub[0] for sub in retVal]
-
-    if len(retVal) > 0:
-        return HTTPException(
-            status_code=503, detail=f"{", ".join(b)} expired")
-
-    return {"status": "healthy"}
+    return JSONResponse(status_code=return_code, content=checks)
