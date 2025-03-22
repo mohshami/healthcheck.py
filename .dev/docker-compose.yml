@@ -1,0 +1,19 @@
+---
+name: healthcheck.py
+services:
+  healthcheck.py-ansible:
+    hostname: healthcheck.py
+    container_name: healthcheck.py
+    image: healthcheck.py
+    build:
+      context: .
+      ssh:
+        - default
+      args:
+        PUBKEY: ${PUBKEY}
+        UID: ${UID}
+        GID: ${GID}
+    ports:
+      - "${PORT}:22"
+    volumes:
+      - "../../healthcheck.py:/healthcheck.py"
