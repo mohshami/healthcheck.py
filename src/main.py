@@ -109,7 +109,7 @@ async def status(name: str):
         "lastupdate": record[0],
         "grace": record[1],
         "output": "" if record[2] is None else record[2],
-        "status": record[3],
+        "exitcode": record[3],
         "expired": (record[0] + record[1]) < time(),
     }
 
