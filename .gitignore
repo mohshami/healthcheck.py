@@ -1,3 +1,4 @@
 .env
 db.sqlite
 src/__pycache__
+.venv
