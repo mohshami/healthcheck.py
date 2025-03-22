@@ -11,48 +11,51 @@ A sample docker-compose.yml is included, featuring Traefik as a reverse proxy wi
 ## Features:
 * Check Creation: Set up and manage checks for cron jobs or background tasks.
 * Ping Endpoints: Generate unique URLs for tasks to ping upon completion.
-* Check Removal: Easily delete checks that are no longer needed.
+* Check Removal: Easily delete checks that are no longer needed
 
 ## Getting Started
 ```bash
 git clone https://github.com/mohshami/healthcheck.py.git
+# For now, only the database path is defined, only needed if you want to run
+# healthcheck.py without docker
 cp .env.sample .env
-# set variables in .env
+# Update db_path if needed
 docker compose up -d
 ```
 
 ## Usage
-### "Ping" service
+### Update check
 ```bash
-# "ttl" is the time in seconds before the check expires, defaults to 3600
-curl -H "ttl: 300" http://localhost:3000/ping/test1
+curl -H "exitcode: 1" \
+     -H "grace: 20" \
+     -H "output: OK - Status" \
+     http://localhost:3000/update/test1
 ```
 
 ### Status check
 ```bash
-# All Checks
+```bash
+# All checks
 $ curl http://localhost:3000/status
 
-# Returns 200 when none of the checks expired
-{"status":"healthy"}
+# Returns
+# Success
+{"status":"OK"}
 
-# Returns 503 when at least one check expired
-{"status_code":503,"detail":"test1 expired","headers":null}
+# A service check expired or failed
+{"status":"Error","Message":"At least one check failed or expired"}
 
-# Single check, returns 503 if the check in question expired or does not exist
+# Single check
 $ curl http://localhost:3000/status/test1
 
-# Success
-{"status":"healthy"}
-
-# Check expired
-{"status_code":503,"detail":"test1 expired","headers":null}
-
-# Check does not exist
-{"status_code":503,"detail":"Check test2 does not exist","headers":null}
+# Returns
+{"lastupdate":1742664689,"grace":20,"output":"OK - Status","status":0,"expired":true}
 ```
 
 ### Remove a check
 ```bash
-curl -X DELETE http://localhost:3000/ping/test1
+curl http://localhost:3000/delete/test1
+
+# Returns
+{"status":"ok"}
 ```
